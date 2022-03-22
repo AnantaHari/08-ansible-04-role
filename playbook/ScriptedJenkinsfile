@@ -1,0 +1,26 @@
+node("ansible"){
+    stage("Git checkout"){
+        git branch: 'main', credentialsId: '71f28e48-74fb-4a6a-a514-c82ecf7b80fd', url: 'git@github.com:AnantaHari/08-ansible-04-role.git'
+    }
+    stage("Sample define secret_check"){
+        secret_check=params.prod_run
+    }
+    stage("Run playbook"){
+        if (secret_check){
+            dir('playbook') {
+                withCredentials([sshUserPrivateKey(credentialsId: '9571db1a-23e1-4e30-b810-1086a38c0e6b', keyFileVariable: 'PRIVATE', usernameVariable: 'anantahari')]) {
+                    sh 'ansible-playbook -i inventory/test site.yml --private-key $PRIVATE'
+                }
+            }
+        }
+        else{
+            dir('playbook') {
+                withCredentials([sshUserPrivateKey(credentialsId: '9571db1a-23e1-4e30-b810-1086a38c0e6b', keyFileVariable: 'PRIVATE', usernameVariable: 'anantahari')]) {
+                    sh 'ansible-playbook -i inventory/test site.yml --check --diff --private-key $PRIVATE'
+                }
+            }
+            
+        }
+        
+    }
+}
